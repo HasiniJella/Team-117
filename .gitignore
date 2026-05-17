@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+firebase-applet-config.json
+.venv/
+
+node_modules
+dist/
+build/
+.next/
+dist-ssr
+.env
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.DS_Store
+Thumbs.db
+
+# Custom Large Files Exclusions
+*.mp4
+*.zip
+*.dmg
+*.exe

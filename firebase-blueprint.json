@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Personal and health information of the user.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "gender": { "type": "string", "enum": ["Female", "Male", "Other"] },
+        "bloodType": { "type": "string" },
+        "allergies": { "type": "string" },
+        "medications": { "type": "string" },
+        "conditions": { "type": "string" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "healthGoals": { "type": "string" }
+      }
+    },
+    "HealthLog": {
+      "title": "Health Log",
+      "description": "Daily health metrics logged by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "heartRate": { "type": "number" },
+        "systolicBP": { "type": "number" },
+        "diastolicBP": { "type": "number" },
+        "sleepHours": { "type": "number" },
+        "steps": { "type": "number" },
+        "symptoms": { "type": "string" }
+      },
+      "required": ["id", "date"]
+    },
+    "PeriodCycle": {
+      "title": "Period Cycle",
+      "description": "Tracking menstrual cycle start and end dates.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "startDate", "endDate"]
+    },
+    "PeriodLog": {
+      "title": "Period Log",
+      "description": "Daily symptoms and moods related to the menstrual cycle.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "moods": { "type": "array", "items": { "type": "string" } },
+        "symptoms": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      },
+      "required": ["date"]
+    },
+    "MedicationReminder": {
+      "title": "Medication Reminder",
+      "description": "Schedulers for taking medications.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "dosage": { "type": "string" },
+        "time": { "type": "string" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "dosage", "time", "active"]
+    },
+    "MedicalDocument": {
+      "title": "Medical Document",
+      "description": "Uploaded medical documents and their metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "data": { "type": "string", "description": "Base64 encoded data URL (up to 1MB)" },
+        "uploadedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "type", "uploadedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "The root document for a user's profile."
+    },
+    "/users/{userId}/healthLogs/{logId}": {
+      "schema": "HealthLog",
+      "description": "A collection of health metrics for the user."
+    },
+    "/users/{userId}/periodCycles/{cycleId}": {
+      "schema": "PeriodCycle",
+      "description": "A collection of Menstrual cycles."
+    },
+    "/users/{userId}/periodLogs/{logDate}": {
+      "schema": "PeriodLog",
+      "description": "Daily symptoms/moods logged by date."
+    },
+    "/users/{userId}/medications/{medId}": {
+      "schema": "MedicationReminder",
+      "description": "A collection of medication reminders."
+    },
+    "/users/{userId}/documents/{docId}": {
+      "schema": "MedicalDocument",
+      "description": "A collection of uploaded medical documents."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Vitalis",
+  "description": "Vitalis is an all-in-one personal health sanctuary designed to empower your wellness journey. It combines a robust Personal Health Record (PHR) with intelligent tracking for menstrual cycles, precise medication reminders, and secure medical document storage. Leveraging advanced AI, Vitalis provides personalized dietary planning and health guidance, turning complex data into actionable insights for a healthier, more balanced life.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

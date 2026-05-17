@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isEmailVerified() { return request.auth.token.email_verified == true; }
+
+    // Validation helpers
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['name']) // Minimum requirement
+        && (data.name is string && data.name.size() <= 100)
+        && (!('age' in data) || data.age is number)
+        && (!('gender' in data) || data.gender in ['Female', 'Male', 'Other'])
+        && (!('bloodType' in data) || (data.bloodType is string && data.bloodType.size() <= 10))
+        && (!('allergies' in data) || (data.allergies is string && data.allergies.size() <= 1000))
+        && (!('medications' in data) || (data.medications is string && data.medications.size() <= 1000))
+        && (!('conditions' in data) || (data.conditions is string && data.conditions.size() <= 1000))
+        && (!('weight' in data) || data.weight is number)
+        && (!('height' in data) || data.height is number)
+        && (!('healthGoals' in data) || (data.healthGoals is string && data.healthGoals.size() <= 2000));
+    }
+
+    function isValidHealthLog(data) {
+      return data.keys().hasAll(['id', 'date'])
+        && isValidId(data.id)
+        && data.date is string
+        && (!('heartRate' in data) || data.heartRate is number)
+        && (!('systolicBP' in data) || data.systolicBP is number)
+        && (!('diastolicBP' in data) || data.diastolicBP is number)
+        && (!('sleepHours' in data) || data.sleepHours is number)
+        && (!('steps' in data) || data.steps is number)
+        && (!('symptoms' in data) || (data.symptoms is string && data.symptoms.size() <= 1000));
+    }
+
+    function isValidPeriodCycle(data) {
+      return data.keys().hasAll(['id', 'startDate', 'endDate'])
+        && isValidId(data.id)
+        && data.startDate is string
+        && data.endDate is string;
+    }
+
+    function isValidPeriodLog(data) {
+      return data.keys().hasAll(['date'])
+        && data.date is string
+        && (!('moods' in data) || (data.moods is list && data.moods.size() <= 20))
+        && (!('symptoms' in data) || (data.symptoms is list && data.symptoms.size() <= 20))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000));
+    }
+
+    function isValidMedicationReminder(data) {
+      return data.keys().hasAll(['id', 'name', 'dosage', 'time', 'active'])
+        && isValidId(data.id)
+        && data.name is string && data.name.size() <= 200
+        && data.dosage is string && data.dosage.size() <= 200
+        && data.time is string && data.time.matches('^[0-9]{2}:[0-9]{2}$')
+        && data.active is bool;
+    }
+
+    function isValidMedicalDocument(data) {
+      return data.keys().hasAll(['id', 'name', 'type', 'uploadedAt'])
+        && isValidId(data.id)
+        && data.name is string && data.name.size() <= 255
+        && data.type is string && data.type.size() <= 100
+        && data.uploadedAt is string
+        && (!('data' in data) || (data.data is string && data.data.size() <= 1048576)); // 1MB limit check
+    }
+
+    // Match rules
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUserProfile(incoming());
+      
+      match /healthLogs/{logId} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidHealthLog(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /periodCycles/{cycleId} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidPeriodCycle(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /periodLogs/{logDate} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidPeriodLog(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /medications/{medId} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidMedicationReminder(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /documents/{docId} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidMedicalDocument(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
